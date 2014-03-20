@@ -48,7 +48,7 @@ You can get a human-readable list of rules using::
 
 This produces something like the following::
 
-    HOST                                ACTION                    SUBDOMS 
+    HOST                                ACTION                    SUBDOMS   PARAMS
     top-secret.com                      empty<403>                True    
     www.forever.com                     spin                      True
 

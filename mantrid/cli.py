@@ -19,7 +19,7 @@ class MantridCli(object):
             if method_name.startswith("action_") \
                and method_name != "action_names":
                 yield method_name[7:]
-        
+
     def run(self, argv):
         # Work out what action we're doing
         try:
@@ -40,11 +40,11 @@ class MantridCli(object):
             sys.exit(1)
         # Run it
         getattr(self, "action_%s" % action)(*argv[2:])
-    
+
     def action_list(self):
         "Lists all hosts on the LB"
-        format = "%-35s %-25s %-8s"
-        print format % ("HOST", "ACTION", "SUBDOMS")
+        format = "%-35s %-25s %-8s %s"
+        print format % ("HOST", "ACTION", "SUBDOMS", "PARAMS")
         for host, details in sorted(self.client.get_all().items()):
             if details[0] in ("proxy", "mirror"):
                 action = "%s<%s>" % (
@@ -71,8 +71,11 @@ class MantridCli(object):
                 )
             else:
                 action = details[0]
-            print format % (host, action, details[2])
-    
+
+            # create string with other params, skipping 'backend' "k1=v,k2=v"
+            params = ",".join(["%s=%s" % (k, v) for k, v in details[1].iteritems() if k != 'backends'])
+            print format % (host, action, details[2], params)
+
     def action_set(self, hostname=None, action=None, subdoms=None, *args):
         "Adds a hostname to the LB, or alters an existing one"
         usage = "set <hostname> <action> <subdoms> [option=value, ...]"
@@ -122,13 +125,13 @@ class MantridCli(object):
             hostname,
             [action, options, subdoms.lower() == "true"]
         )
-    
+
     def action_delete(self, hostname):
         "Deletes the hostname from the LB."
         self.client.delete(
             hostname,
         )
-    
+
     def action_stats(self, hostname=None):
         "Shows stats (possibly limited by hostname)"
         format = "%-35s %-11s %-11s %-11s %-11s"
